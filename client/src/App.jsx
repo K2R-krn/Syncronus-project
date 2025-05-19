@@ -1,34 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Profile from "./pages/profile";
+import Chat from "./pages/chat";
+import Auth from "./pages/auth";
+import { useAppStore } from './store';
+import { apiClient } from './lib/api-client';
+import { GET_UESR_INFO } from './utils/constants';
+import { useState, useEffect } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+const PrivateRoute = ({children}) => {
+  const {userInfo} = useAppStore();
+  const isAuthenticated = !!userInfo; // check if user info is not undefined -> then get false and redirected to auth page in below line
+  return isAuthenticated ? children : <Navigate to="/auth" /> ; // 
+}
+
+const AuthRoute = ({children}) => {
+  const {userInfo} = useAppStore();
+  const isAuthenticated = !!userInfo; // check if user info is not undefined -> then get false and redirected to auth page in below line
+  return isAuthenticated ? <Navigate to="/chat" />: children ; // 
+}
+
+
+const App = () => {
+
+  // check if we have userInfo or no
+  const {userInfo, setUserInfo} = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      // making an api call
+      try {
+        const response = await apiClient.get(GET_UESR_INFO, {
+          withCredentials: true,
+        });
+        if(response.status === 200 && response.data.id){
+          setUserInfo(response.data.user ?? response.data);
+        }else{
+          setUserInfo(undefined);
+        }
+        console.log({response});
+      } catch (error) {
+        setUserInfo(undefined);
+      } finally{
+        setLoading(false);
+      }
+    }
+    if(!userInfo){
+      getUserData();
+    }else{
+      setLoading(false);
+    }
+  }, [userInfo, setUserInfo]) // as soon as page loads we call this // and only call this when we dont have userInfo
+
+  if(loading){ 
+    return <div>Loading ...</div>
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element= <AuthRoute> {<Auth />} </AuthRoute> />
+          <Route path="/chat" element=  <PrivateRoute> {<Chat />} </PrivateRoute>/>
+          <Route path="/profile" element=<PrivateRoute> {<Profile />} </PrivateRoute> />
+
+          <Route path="*" element={<Navigate to="/auth" />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   )
 }
 
