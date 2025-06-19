@@ -4,9 +4,12 @@ import MessageContainer from "./components/message-container";
 
 const ChatContainer = () => {
   return (
-    <div className="fixed top-0 h-[100vh] w-[100vh] bg-[#1c1d25] flex flex-col md:static md:flex-1">
+    <div className="fixed w-[100vw] h-[100vh] bg-[#1c1d25] flex-col flex md:static md:flex-1">
+        
         <ChatHeader />
-        <MessageContainer />
+        <div className="flex-1 overflow-y-auto">
+          <MessageContainer />
+        </div>
         <MessageBar />
     </div>
   )

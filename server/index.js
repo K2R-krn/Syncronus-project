@@ -4,6 +4,8 @@ import cors from "cors"
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
+import contactRoutes from "./routes/ContactsRoutes.js";
+import setupSocket from "./socket.js";
 
 dotenv.config(); // with this command all the env variables will be insivde process.env which is written insive process.env
 
@@ -27,12 +29,14 @@ app.use(express.json()); // To have our body in json format..-> Whatever requres
 
 // Auth route
 app.use("/api/auth", authRoutes);
+app.use("/api/contacts", contactRoutes)
 
 // Connecting server
 const server = app.listen(port, ()=>{
     console.log(`Server running at https://localhost:${port}`);
 });
 
+setupSocket(server);
 // Connect DB
 mongoose
     .connect(databaseURL)

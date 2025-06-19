@@ -12,7 +12,7 @@ const createToken = (email, userId) => {
     }) // We telling that - token data = email, userId -- and passing JWT_KEY -- and it expires in 3 days
 };
 
-export const signup = async (request, response, next)=> {
+export const signup = async (request, response, next) => {
     try {
         // Write actual logic -> Get email pass form requrest
         const {email, password} = request.body;
@@ -182,6 +182,19 @@ export const removeProfileImage = async (request, response, next)=> {
 
         // sendiong data to user
         return response.status(200).send("Profile image removed sucessfully.");
+    } catch (error) {
+        console.log({error});
+        return response.status(500).send("Internal Server Error");
+    }
+};
+
+
+export const logout = async (request, response, next)=> {
+    try {
+        
+        response.cookie("jwt", "", {maxAge:1, secure:true, sameSite:"None"});
+
+        return response.status(200).send("Logout sucessfull.");
     } catch (error) {
         console.log({error});
         return response.status(500).send("Internal Server Error");

@@ -17,7 +17,7 @@ const PrivateRoute = ({children}) => {
 const AuthRoute = ({children}) => {
   const {userInfo} = useAppStore();
   const isAuthenticated = !!userInfo; // check if user info is not undefined -> then get false and redirected to auth page in below line
-  return isAuthenticated ? <Navigate to="/chat" />: children ; // 
+  return isAuthenticated ? <Navigate to="/chat" />: children ; //  
 }
 
 
