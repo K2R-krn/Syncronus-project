@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
 import contactRoutes from "./routes/ContactsRoutes.js";
 import setupSocket from "./socket.js";
+import messagesRoutes from "./routes/MessagesRoutes.js";
 
 dotenv.config(); // with this command all the env variables will be insivde process.env which is written insive process.env
 
@@ -29,7 +30,8 @@ app.use(express.json()); // To have our body in json format..-> Whatever requres
 
 // Auth route
 app.use("/api/auth", authRoutes);
-app.use("/api/contacts", contactRoutes)
+app.use("/api/contacts", contactRoutes);
+app.use("/api/messages", messagesRoutes);
 
 // Connecting server
 const server = app.listen(port, ()=>{

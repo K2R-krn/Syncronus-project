@@ -4,11 +4,15 @@ import { RiEmojiStickerLine } from "react-icons/ri";
 import { IoSend } from "react-icons/io5";
 import EmojiPicker from "emoji-picker-react";
 import { useEffect } from "react";
+import { useAppStore } from "@/store";
+import { useSocket } from "@/context/SocketContext";
 
 const MessageBar = () => {
 
   const [message, setMessage] = useState("");
   const emojiRef = useRef();
+  const {selectedChatType, selectedChatData, userInfo} = useAppStore();
+  const socket = useSocket();
   const [emojiPickerOpen, setemojiPickerOpen] = useState(false);
 
   // use effect so click anywhere and emoji tray closed.
@@ -28,9 +32,35 @@ const MessageBar = () => {
     setMessage((msg) => msg+emoji.emoji)
   }
 
-  const handleSendMessage = async () => {
-    
-  }
+  // const handleSendMessage = async () => {
+  //   console.log("Trying to send via socket:", socket);
+  //   if(selectedChatType === "contact"){
+  //     socket.emit("sendMessage", {
+  //         sender: userInfo.id,
+  //         content: message,
+  //         recipient: selectedChatData._id,
+  //         messageType: "text",
+  //         fileUrl: undefined,
+  //     });
+  //     setMessage("");
+  //   }
+  // }
+  const handleSendMessage = () => {
+    if (!socket.current) {
+        console.error("Socket not initialized yet");
+        return;
+    }
+
+    socket.current.emit("sendMessage", {
+        sender: userInfo.id,
+        content: message,
+        recipient: selectedChatData._id,
+        messageType: "text",
+        fileUrl: undefined,
+    });
+
+    setMessage("");
+}
 
 
 
