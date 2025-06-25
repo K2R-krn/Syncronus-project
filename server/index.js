@@ -46,6 +46,6 @@ setupSocket(server);
 mongoose
     .connect(databaseURL)
     .then(()=> console.log("DB Connection Successfull."))
-    .catch(err=> console.log(err.message))
+    .catch(err=> console.log("DB Connection error:",err.message))
 
 
