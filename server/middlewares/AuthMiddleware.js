@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export const verifyToken = (request, response, next) => {
     const token = request.cookies.jwt;

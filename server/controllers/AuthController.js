@@ -2,7 +2,8 @@ import {response} from "express";
 import User from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import {renameSync, unlinkSync} from "fs"
+import {renameSync, unlinkSync} from "fs";
+
 
 // Creation of JWT
 const maxAge = 3*24*60*60*1000; // Expires in 3 days

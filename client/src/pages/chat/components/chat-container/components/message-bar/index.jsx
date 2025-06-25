@@ -6,14 +6,17 @@ import EmojiPicker from "emoji-picker-react";
 import { useEffect } from "react";
 import { useAppStore } from "@/store";
 import { useSocket } from "@/context/SocketContext";
+import { apiClient } from "@/lib/api-client";
+import { UPLOAD_FILE_ROUTE } from "@/utils/constants";
 
 const MessageBar = () => {
 
   const [message, setMessage] = useState("");
   const emojiRef = useRef();
-  const {selectedChatType, selectedChatData, userInfo} = useAppStore();
+  const {selectedChatType, selectedChatData, userInfo, setIsUploading, setFileUploadProgress} = useAppStore();
   const socket = useSocket();
   const [emojiPickerOpen, setemojiPickerOpen] = useState(false);
+  const fileInputRef = useRef();
 
   // use effect so click anywhere and emoji tray closed.
   useEffect(() => {
@@ -26,7 +29,7 @@ const MessageBar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [emojiRef])
+  }, [emojiRef]);
 
   const handleAddEmoji = async (emoji) => {
     setMessage((msg) => msg+emoji.emoji)
@@ -45,22 +48,98 @@ const MessageBar = () => {
   //     setMessage("");
   //   }
   // }
+  //! Below working for contacts atleast..
+  // const handleSendMessage = () => {
+  //   if (!socket.current) {
+  //       console.error("Socket not initialized yet");
+  //       return;
+  //   }
+
+  //   socket.current.emit("sendMessage", {
+  //       sender: userInfo.id,
+  //       content: message,
+  //       recipient: selectedChatData._id,
+  //       messageType: "text",
+  //       fileUrl: undefined,
+  //   });
+  //   setMessage("");
+  // }
+
   const handleSendMessage = () => {
     if (!socket.current) {
         console.error("Socket not initialized yet");
         return;
     }
 
-    socket.current.emit("sendMessage", {
+    if (selectedChatType === "contact") {
+        socket.current.emit("sendMessage", {
+            sender: userInfo.id,
+            content: message,
+            recipient: selectedChatData._id,
+            messageType: "text",
+            fileUrl: undefined,
+        });
+        setMessage("");
+    }else if(selectedChatType === "channel"){
+      socket.current.emit("send-channel-message", {
         sender: userInfo.id,
         content: message,
-        recipient: selectedChatData._id,
         messageType: "text",
         fileUrl: undefined,
-    });
-
+        channelId: selectedChatData._id,
+      });
+    }
     setMessage("");
 }
+
+  const handleAttachmentClick = () => {
+    if(fileInputRef.current){
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAttachmentChange = async () => {
+    try {
+      const file = event.target.files[0];
+      if(file){
+        const formData = new FormData();
+        formData.append("file", file);
+        setIsUploading(true);
+        const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
+          withCredentials: true,
+          onUploadProgress:data=>{
+            setFileUploadProgress(Math.round((100*data.loaded)/ data.total));
+          }
+        });
+
+        if(response.status === 200 && response.data){
+          setIsUploading(false);
+          if(selectedChatType === "contact"){
+            socket.current.emit("sendMessage", {
+              sender: userInfo.id,
+              content: undefined,
+              recipient: selectedChatData._id,
+              messageType: "file",
+              fileUrl: response.data.filePath,
+            });
+          } else if (selectedChatType === "channel"){
+            socket.current.emit("send-channel-message", {
+              sender: userInfo.id,
+              content: message,
+              messageType: "file",
+              fileUrl: response.data.filePath,
+              channelId: selectedChatData._id,
+            });
+          }
+          
+        };
+      };
+      console.log({file});
+    } catch (error) {
+        setIsUploading(false);
+        console.log({error})
+    }
+  }
 
 
 
@@ -74,10 +153,11 @@ const MessageBar = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          <button className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+          <button className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all" onClick={handleAttachmentClick}
           >
             <GrAttachment className="text-2xl" />
           </button>
+          <input type="file" className="hidden" ref={fileInputRef} onChange={handleAttachmentChange} />
           <div className="relative">
             <button className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
             onClick={() => setemojiPickerOpen(true)}>

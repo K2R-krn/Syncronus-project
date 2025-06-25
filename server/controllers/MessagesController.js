@@ -1,4 +1,8 @@
 import Message from "../models/MessagesModel.js";
+import {mkdirSync} from 'fs';
+import fs from 'fs';
+import { renameSync } from "fs";
+
 
 export const getMessages = async (request, response, next)=> {
     try {
@@ -19,5 +23,25 @@ export const getMessages = async (request, response, next)=> {
     } catch (error) {
       console.log({error});
       return response.status(500).send("Internal Server ERROR");
+    }
+}
+
+export const uploadFile = async (request,response,next) =>{
+    try {
+    if(!request.file){
+        return response.status(400).send("File is required")
+    }
+    const date = Date.now();
+    let fileDir = `uploads/files/${date}`
+    let fileName = `${fileDir}/${request.file.originalname}`
+
+    mkdirSync(fileDir,{recursive:true});
+    renameSync(request.file.path, fileName );
+
+     return response.status(200).json({filePath: fileName})
+
+    } catch (error) {
+      console.log({error});
+      return response.status(500).send("Internal Server ERROR")
     }
 }

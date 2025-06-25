@@ -27,55 +27,91 @@ export const SocketProvider = ({children}) => {
         });
 
 
-        const handleReceiveMessage = (message) => {
-    const { selectedChatData, selectedChatType, addMessage } = useAppStore.getState();
+    const handleReceiveMessage = (message) => {
+        const { selectedChatData, selectedChatType, addMessage, addContactsInDMContacts } = useAppStore.getState();
 
-    console.log("Incoming message payload:", message);
-    console.log("Selected chat data:", selectedChatData);
+        console.log("Incoming message payload:", message);
+        console.log("Selected chat data:", selectedChatData);
 
-    const getId = (entity) => {
-        if (!entity) return undefined;
-        if (typeof entity === "string") return entity;
-        return entity._id || entity.id;
+        // // const getId = (entity) => {
+        // //     if (!entity) return undefined;
+        // //     if (typeof entity === "string") return entity;
+        // //     return entity._id || entity.id;
+        // // };
+
+        // // const senderId = getId(message.sender);
+        // // const recipientId = getId(message.recipient);
+
+        // if (
+        //     selectedChatType !== undefined &&
+        //     (selectedChatData._id === message.sender._id || selectedChatData._id === message.recipient._id)
+        // ) {
+        //     console.log("message received", message);
+        //     addMessage(message);
+        // }
+
+        // addContactsInDMContacts(message);
+
+        const getId = (entity) => {
+          if (!entity) return undefined;
+          if (typeof entity === "string") return entity;
+          return entity._id || entity.id;
+        };
+    
+        const senderId = getId(message.sender);
+        const recipientId = getId(message.recipient);
+    
+        if (
+          selectedChatType !== undefined &&
+          (selectedChatData._id === senderId || selectedChatData._id === recipientId)
+        ) {
+          console.log("message received", message);
+          addMessage(message);
+        }
+    
+        addContactsInDMContacts(message);
+
     };
-
-    const senderId = getId(message.sender);
-    const recipientId = getId(message.recipient);
-
-    if (
-        selectedChatType !== undefined &&
-        (selectedChatData._id === senderId || selectedChatData._id === recipientId)
-    ) {
-        console.log("message received", message);
-        addMessage(message);
-    }
-
-    //     const handleReceiveMessage = (message) => {
+        // const handleReceiveMessage = (message) => {
               
-    //         const {selectedChatData, selectedChatType, addMessage} = useAppStore.getState();
+        //     const {selectedChatData, selectedChatType, addMessage, addContactsInDMContacts} = useAppStore.getState();
 
-    //         console.log("Incoming message payload:", message);
-    //         console.log("Selected chat data:", selectedChatData);
+            // console.log("Incoming message payload:", message);
+            // console.log("Selected chat data:", selectedChatData);
 
-    //         const senderId = typeof message.sender === "object" ? message.sender._id : message.sender;
-    // const recipientId = typeof message.recipient === "object" ? message.recipient._id : message.recipient;
-    // if (
-    //     selectedChatType !== undefined &&
-    //     (selectedChatData._id === senderId || selectedChatData._id === recipientId)
-    // ) {
-    //     console.log("message received", message);
-    //     addMessage(message);
-    // }
+            // const senderId = typeof message.sender === "object" ? message.sender._id : message.sender;
+            // const recipientId = typeof message.recipient === "object" ? message.recipient._id : message.recipient;
+            // if (
+            //     selectedChatType !== undefined &&
+            //     (selectedChatData._id === senderId || selectedChatData._id === recipientId)
+            // ) {
+            //     console.log("message received", message);
+            //     addMessage(message);
+            // }
 
 
         //     if(selectedChatType !== undefined && (selectedChatData._id === message.sender._id || selectedChatData._id === message.recipient._id)){
         //         console.log("message reveived", message);
         //         addMessage(message);
         //     }
+        //     addContactsInDMContacts(message);
+            
+        // }
+
+        const handleReceiveChannelMessage = (message) => {
+            // console.log("Received channel message at frontend: ", message);
+
+            const {selectedChatData, selectedChatType, addMessage, addChannelInChannelList} = useAppStore.getState();
+
+            if(selectedChatType!== undefined && selectedChatData._id === message.channelId) {
+                addMessage(message);
+            }
+            addChannelInChannelList(message);
             
         }
 
         socket.current.on("receiveMessage", handleReceiveMessage);
+        socket.current.on("receive-channel-message", handleReceiveChannelMessage);
 
         return () => {
             

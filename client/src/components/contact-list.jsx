@@ -5,7 +5,7 @@ import { HOST } from '@/utils/constants';
 import { getColor } from '@/lib/utils';
 
 const ContactList = ({contacts, isChannel=false }) => {
-    console.log("ContactList received contacts:", contacts);
+    // console.log("ContactList received contacts:", contacts);
 
     const {selectedChatData, setSelectedChatData, setSelectedChatType, selectedChatType, setSelectedChatMessages} = useAppStore();
 
@@ -56,7 +56,7 @@ const ContactList = ({contacts, isChannel=false }) => {
                 
             }
             {
-                isChannel ? <span>{contact.name}</span> : <span>{`${contact.firstName} ${contact.lastName}`}</span>
+                isChannel ? <span>{contact.name}</span> : <span>{contact.firstName ? `${contact.firstName} ${contact.lastName}` : contact.email}</span>
             }
         
         </div>
