@@ -17,7 +17,7 @@ const databaseURL = process.env.DATABASE_URL;
 
 // Setting up cors -> cors = when communicating with different servers we need to communicate between them ->  Forntend hosted on one and Backend hosted on other -> Then we need cors to communicate between them 
 app.use(cors({
-    origin:https:`https://syncronus-fe-production.up.railway.app/`,
+    origin: "https://syncronus-fe-production.up.railway.app",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true, // Use this to enable cookies.. if not done this cookies wont work
 }));
