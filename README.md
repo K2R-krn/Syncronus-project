@@ -7,7 +7,7 @@ Deployed at : https://syncronus-fe-production.up.railway.app/
 
 ## 🚀 Overview
 
-**Syncronus** is a responsive, feature-rich chat platform that enables real-time personal and group messaging, secure JWT-based authentication, file sharing, and emoji-supported conversations. It combines a powerful Node.js backend with a modern React-based frontend for a seamless user experience across devices.
+**Syncronus** is a responsive, feature-rich chat platform that enables real-time personal and group messaging, file sharing, emoji-supported conversations and secure JWT-based authentication. It combines a powerful and secure Node.js backend with a modern React-based frontend for a seamless user experience across devices.
 
 ---
 
@@ -38,7 +38,7 @@ Deployed at : https://syncronus-fe-production.up.railway.app/
 | Realtime     | Socket.IO                             |
 | File Uploads | Multer                                |
 | Database     | MongoDB                               |
-| Auth         | JWT                                   |
+| Auth         | JWT ( Json Web Token )                |
 | HTTP Client  | Axios                                 |
 
 ---
