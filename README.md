@@ -61,6 +61,9 @@ npm install
 ```
 ### 2. Configure environment variables
 ```env
+# client/.env
+VITE_SERVER_URL = "backend_URL"
+
 # server/.env
 PORT=5000
 MONGO_URI=your_mongo_uri
