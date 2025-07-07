@@ -1,5 +1,6 @@
 # Syncronus 💬  
 A Full-Stack Chat Application with Real-Time Messaging, Group Chats, and File Sharing.
+Deployed at : https://syncronus-fe-production.up.railway.app/
 
 ---
 
