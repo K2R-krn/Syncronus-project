@@ -18,7 +18,12 @@ export const signup = async (request, response, next) => {
         // Write actual logic -> Get email pass form requrest
         const {email, password} = request.body;
         if(!email || !password) {
-            return response.status(400).send("Email and Password is required.");
+            return response.status(400).json({ message: "Email and Password is required" });
+        }
+        // Check for existing user first (optional but better UX)
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: "EmailAlreadyExists" });
         }
         // If we have email and pass create user
         const user = await User.create({email, password});
@@ -35,8 +40,13 @@ export const signup = async (request, response, next) => {
             profileSetup: user.profileSetup,
         }})
     } catch (error) {
-        console.log({error});
-        return response.status(500).send("Internal Server Error");
+        //  Catch MongoDB duplicate key error and return readable message
+        if (error.code === 11000 && error.keyPattern?.email) {
+            return res.status(409).json({ message: "EmailAlreadyExists" });
+        }
+
+        console.error("Signup error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 

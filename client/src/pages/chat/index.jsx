@@ -18,7 +18,7 @@ const Chat = () => {
   const navigate = useNavigate();
 
   useEffect(() => { // Now chat page not accessible if user didnt complete profile...
-    console.log("userInfo:", userInfo);
+    // console.log("userInfo:", userInfo);
     if(!userInfo.profileSetup){
       toast('Please Setup profile to continue.');
       navigate("/profile");

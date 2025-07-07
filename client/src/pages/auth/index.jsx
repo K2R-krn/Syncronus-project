@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
 
 
-
 const Auth = () => {
 
   const [email, setEmail] = useState("");
@@ -24,12 +23,26 @@ const Auth = () => {
   // console.log(email+password+confirmPassword);
 
   const validateSignup = () => {
+    // Email validation: Regular expression for email format starting with a letter and followed by optional numbers, valid domain like gmail.com
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    // Password validation: Regular expression for at least one uppercase, one lowercase, one number, and one special character
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
     if(!email.length) {
       toast.error("Email is Required.");
       return false; 
     }
+    if (!emailPattern.test(email)) {
+      toast.error("Enter a valid email");
+      return false;
+    }
     if(!password.length){
       toast.error("Password is required.")
+      return false;
+    }
+    if (!passwordPattern.test(password)) {
+      toast.error("Password must be at least 6 characters long, contain uppercase,  lowercase, number, and special character");
       return false;
     }
     if(password !== confirmPassword){
@@ -41,23 +54,48 @@ const Auth = () => {
 
   const handleSignup = async()=>{
     if(validateSignup()){
-      const response = await apiClient.post(SIGNUP_ROUTE,
-      {email, password},
-      {withCredentials: true} // only now we can receive jwt cookie.. 
-    );
-    if(response.status === 200){
-      setUserInfo(response.data.user);
-      navigate("/profile")
-    }
-      console.log({response});
+      try{
+        const response = await apiClient.post(SIGNUP_ROUTE,
+          {email, password},
+          {withCredentials: true} // only now we can receive jwt cookie.. 
+        );
+        if(response.status === 201){
+          setUserInfo(response.data.user);
+          navigate("/profile");
+        }
+        // console.log({response});
+      }catch(error){
+        if (error.response) {
+          const errorMessage = error.response.data.error || error.response.data.message;
+          console.error("Full error response:", error.response?.data);
+          console.error("Error response:", error.response?.data);
+console.error("Status:", error.response?.status);
+console.error("Full error:", error);
+          if (errorMessage === "EmailAlreadyExists") {
+            toast.error("This email is already registered!");
+          } else if (errorMessage === "Email and Password are required") {
+            toast.error("Email and password are required!");
+          } else {
+            toast.error("Signup failed! Please try again.");
+          }
+        } else {
+          toast.error("An unexpected error occurred.");
+        }
+      }
+    
     }
   };
 
 
   const validateLogin =() => {
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if(!email.length) {
       toast.error("Email is Required.");
       return false; 
+    }
+    if (!emailPattern.test(email)) {
+      toast.error("Enter a valid email address.");
+      return false;
     }
     if(!password.length){
       toast.error("Password is required.")
@@ -66,18 +104,64 @@ const Auth = () => {
     return true;
   }
   
-  const handleLogin = async()=>{
-    if(validateLogin()){
-      const response = await apiClient.post(LOGIN_ROUTE, {email,password}, {withCredentials: true});
-      console.log({response});
-      if(response.data.user.id){
-        setUserInfo(response.data.user)
-        if(response.data.user.profileSetup) navigate("/chat");
-        else navigate("/profile");
-      }
-    }
-  };
+  // const handleLogin = async()=>{
+  //   if(validateLogin()){
+  //     const response = await apiClient.post(LOGIN_ROUTE, {email,password}, {withCredentials: true});
+  //     console.log({response});
+  //     if(response.data.user.id){
+  //       setUserInfo(response.data.user);
+  //       if(response.data.user.profileSetup){
+  //         toast.success("Login Sucessfull") 
+  //         navigate("/chat");
 
+  //       }
+  //       else navigate("/profile");
+  //     }
+  //   }
+  // };
+  const handleLogin = async () => {
+  if (!validateLogin()) return;
+
+  try {
+    const response = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true });
+
+    if (response.data.user?.id) {
+      setUserInfo(response.data.user);
+      toast.success("Login Successful!");
+
+      if (response.data.user.profileSetup) {
+        navigate("/chat");
+      } else {
+        navigate("/profile");
+      }
+    } else {
+      toast.error("Unexpected response. Please try again.");
+    }
+
+  } catch (error) {
+    // console.log("Login error caught");
+
+    const status = error.response?.status;
+    const rawData = error.response?.data;
+    const message = typeof rawData === "string" ? rawData : rawData?.message || rawData?.error;
+
+    if (status === 400 && message === "Password is incorrect.") {
+      toast.error("Incorrect password.");
+    } else if (status === 404 && message === "User with the given email not found.") {
+      toast.error("No account found with this email.");
+    } else if (status === 400 && message === "Email and Password is required.") {
+      toast.error("Email and password are required.");
+    } else if (status === 500) {
+      toast.error("Server error. Please try again later.");
+    } else if (!error.response) {
+      toast.error("Cannot connect to server. Check your network.");
+    } else {
+      toast.error(message || "Login failed. Please try again.");
+    }
+  }
+};
+
+  
   
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
